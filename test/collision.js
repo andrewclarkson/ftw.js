@@ -1,4 +1,4 @@
-console.log('Test basic walking functionality');
+console.log('Test collision avoidance');
 
 var Walker = require('../ftw');
 var assert = require('assert');
@@ -38,4 +38,7 @@ walker.on('done', function() {
     assert.deepEqual(actual.sort(), expect, 'files weren\'t as expected');
 });
 
-walker.walk(__dirname + '/Felidae');
+walker.walk([
+    __dirname + '/Felidae', 
+    __dirname + '/Felidae/Puma'
+]);

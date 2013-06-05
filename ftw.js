@@ -238,6 +238,7 @@ Walker.prototype._emitTypes = function(result, stats) {
         }
     });
 };
+
 /* Event documentation */
 
 /**
@@ -257,15 +258,5 @@ Walker.prototype._emitTypes = function(result, stats) {
  * @event Walker#dir
  * @type {String}
  */
-/*
-var walker = new Walker({
-    depth: 0
-});
 
-walker.on('done', function() {
-    console.log('done');
-});
-
-walker.walk('test/Felidae');
-*/
 module.exports = Walker;

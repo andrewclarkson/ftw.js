@@ -75,10 +75,10 @@ Walker.prototype.walk = function(directories) {
     }
 
     /**
-     * walk each directory with a starting depth of 0 and a callback that emits
-     * the done event @see{Walker#done}
+     * walk each directory with a callback that emits the done event 
+     * @see{Walker#done}
      */
-    self._walkEach(directories, 0, function() {
+    self._walkEach(directories, function() {
         self.emit('done');
     });
 };
@@ -87,7 +87,6 @@ Walker.prototype.walk = function(directories) {
  * Calls _walk on each directory @see{@link _walk}
  * @private
  * @param {String[]} directories - the directories to walk
- * @param {Number} depth - the current recursion depth
  * @param {walkedEach} callback - the callback to call when we have walked each
  * directory
  */
@@ -97,7 +96,7 @@ Walker.prototype.walk = function(directories) {
  * @callback walkedEach
  */
 
-Walker.prototype._walkEach = function(directories, depth, callback) {
+Walker.prototype._walkEach = function(directories, callback) {
    
     /** @this Walker */
     var self = this;
@@ -108,12 +107,14 @@ Walker.prototype._walkEach = function(directories, depth, callback) {
      */
     var pending = 0;
     
-    if(depth > self.depth) {
+    if(self.depth < 0) {
         return callback();
     }
 
+    self.depth -= 1;
+
     directories.forEach(function(directory) {
-        self._walk(directory, depth, function() {
+        self._walk(directory, function() {
             /** decrement the pending callbacks; we just finished one */
             pending -= 1;
             
@@ -136,7 +137,6 @@ Walker.prototype._walkEach = function(directories, depth, callback) {
  * Recursively walks a directory
  * @private
  * @param {String} directory - the directory to walk
- * @param {Number} depth - the current recursion depth
  * @param {walked} callback - the callback to call when we have walked the
  * directory
  */
@@ -146,7 +146,7 @@ Walker.prototype._walkEach = function(directories, depth, callback) {
  * @callback walked
  */
 
-Walker.prototype._walk = function(directory, depth, callback) {
+Walker.prototype._walk = function(directory, callback) {
     
     /** @this Walker */
     var self = this;
@@ -168,12 +168,12 @@ Walker.prototype._walk = function(directory, depth, callback) {
         /* now we can be sure the directory exists */
         self.emit('directory', directory);
 
-        self._statEach(results, depth, directory, callback);
+        self._statEach(results, directory, callback);
 
     });
 };
 
-Walker.prototype._statEach = function(results, depth, directory, callback) {
+Walker.prototype._statEach = function(results, directory, callback) {
    
     /* @this Walker */
     var self = this;
@@ -219,7 +219,7 @@ Walker.prototype._statEach = function(results, depth, directory, callback) {
                     return callback();
                 }
 
-                self._walkEach(queue, depth += 1, callback);
+                self._walkEach(queue, callback);
             }
         });
     });

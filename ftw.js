@@ -50,11 +50,11 @@ util.inherits(Walker, events.EventEmitter);
 
 /**
  * Walks a directory firing events on files and directories
- * @param {String|String[]} dirs - a directory path or an array of paths
- * @param {Number} [depth=0] - the recursion depth
+ * @param {String|String[]} directories - a directory path or an array of paths
  * @fires Walker#block
  * @fires Walker#character
- * @fires Walker#dir
+ * @fires Walker#directory
+ * @fires Walker#done
  * @fires Walker#error
  * @fires Walker#fifo
  * @fires Walker#file
@@ -70,33 +70,64 @@ Walker.prototype.walk = function(directories) {
      * if the input is only one directory (a string) convert it into an array
      * with one element
      */
-
     if(typeof directories === 'string') {
         directories = Array(directories);
     }
 
+    /**
+     * walk each directory with a starting depth of 0 and a callback that emits
+     * the done event @see{Walker#done}
+     */
     self._walkEach(directories, 0, function() {
         self.emit('done');
     });
 };
+
+/**
+ * Calls _walk on each directory @see{@link _walk}
+ * @private
+ * @param {String[]} directories - the directories to walk
+ * @param {Number} depth - the current recursion depth
+ * @param {walkedEach} callback - the callback to call when we have walked each
+ * directory
+ */
+
+/**
+ * Returns from a level of recursion / jump up a level
+ * @callback walkedEach
+ */
 
 Walker.prototype._walkEach = function(directories, depth, callback) {
    
     /** @this Walker */
     var self = this;
 
+    /** 
+     * because the functions are asynchronous we need to set up a pending 
+     * callbacks counter
+     */
     var pending = 0;
     
+    if(depth > self.depth) {
+        return callback();
+    }
+
     directories.forEach(function(directory) {
-        pending += 1;
         self._walk(directory, depth, function() {
-            
+            /** decrement the pending callbacks; we just finished one */
             pending -= 1;
             
+            /** 
+             * if this was the last pending callback return from this level of 
+             * recursion @see{@link walkedEach}
+             */
             if(pending === 0) {
-                callback();
+                return callback();
             }
         });
+
+        /** increment the pending callbacks; we just created one with _walk */
+        pending += 1;
     });
 };
 
@@ -106,19 +137,19 @@ Walker.prototype._walkEach = function(directories, depth, callback) {
  * @private
  * @param {String} directory - the directory to walk
  * @param {Number} depth - the current recursion depth
+ * @param {walked} callback - the callback to call when we have walked the
+ * directory
+ */
+
+/**
+ * Return from walking a directory
+ * @callback walked
  */
 
 Walker.prototype._walk = function(directory, depth, callback) {
     
-    debugger;
-
     /** @this Walker */
     var self = this;
-
-    /* if we've reached the maximum recusion depth */
-    if(depth > self.depth) {
-        return callback();
-    }
 
     /* if we have already walked this directory */
     if(self.walked.indexOf(directory) !== -1) {

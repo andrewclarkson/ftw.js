@@ -1,6 +1,6 @@
 {
     "version": "0.0.1",
-    "name": "FTW",
+    "name": "ftw",
     "description": "file tree walker",
     "main": "ftw.js",
     "repository": {
